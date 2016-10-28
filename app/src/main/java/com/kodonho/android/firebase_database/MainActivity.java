@@ -1,5 +1,6 @@
 package com.kodonho.android.firebase_database;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -26,13 +28,13 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     FirebaseDatabase database;
-    DatabaseReference rootRef;
     DatabaseReference userRef;
 
     EditText etUid;
     EditText etName;
     EditText etEmail;
     Button btnAdd;
+    Button btnOpen;
 
     ListView listView;
     ArrayList<Map<String,User>> datas = new ArrayList<>();
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 데이터베이스 커넥션
+        // 1. 데이터베이스 커넥션
         database = FirebaseDatabase.getInstance();
 
         etUid = (EditText) findViewById(R.id.etUid);
@@ -66,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        btnOpen = (Button) findViewById(R.id.btnOpen);
+        btnOpen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, BbsActivity.class);
+                startActivity(intent);
+            }
+        });
 
         listView = (ListView) findViewById(R.id.listView);
         ListAdapter adapter = new ListAdapter();
@@ -86,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                         User user = userData.getValue(User.class);
                         data.put(userId, user);
                         datas.add(data);
-                    }catch(Exception e){
+                    }catch(DatabaseException e){
                         // 데이터 구조가 달라서 매핑이 안될경우 예외처리
                         e.printStackTrace();
                     }
@@ -102,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void writeNewUser(String userId, String name, String email) {
         User user = new User(name, email);
-        rootRef.child("users").child(userId).setValue(user);
+        userRef.child(userId).setValue(user);
         /*
            root - users - michael - name : 누구
                                   - email : 어디
